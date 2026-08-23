@@ -2,8 +2,15 @@ const http = require('http');
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const RAILWAY_API_TOKEN = process.env.RAILWAY_API_TOKEN;
 const ALLOWED_ORIGIN = 'https://abkalen778-eng.github.io';
 const STARTED_AT = Date.now();
+
+const BOT_TARGETS = [
+  { name: 'Pump.fun Scanner', projectId: '2dc1806a-8c98-48a4-a3ed-caf205c5d814', project: 'zestful-perception', service: 'Pumpfun-discord-scanner' },
+  { name: 'FanDuel Scanner', projectId: '9c1a6087-6afa-4530-a874-269684ec0fdb', project: 'faithful-adaptation', service: 'FanDuel-scanner' },
+  { name: 'Pocket Option Bot', projectId: '9c1a6087-6afa-4530-a874-269684ec0fdb', project: 'faithful-adaptation', service: 'Pumpfun-discord-scanner' }
+];
 
 const rate = new Map();
 function rateLimited(ip) {
@@ -57,6 +64,62 @@ function extractText(data) {
   return '';
 }
 
+async function railwayProject(projectId) {
+  const query = `query project($id: String!) {
+    project(id: $id) {
+      name
+      services {
+        edges {
+          node {
+            name
+            serviceInstances {
+              edges {
+                node {
+                  latestDeployment { id status createdAt }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }`;
+  const response = await fetch('https://backboard.railway.com/graphql/v2', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RAILWAY_API_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query, variables: { id: projectId } })
+  });
+  const data = await response.json();
+  if (!response.ok || data.errors) {
+    const msg = data?.errors?.[0]?.message || `Railway HTTP ${response.status}`;
+    throw new Error(msg);
+  }
+  return data.data?.project;
+}
+
+async function getBotStatuses() {
+  const projectIds = [...new Set(BOT_TARGETS.map(b => b.projectId))];
+  const pairs = await Promise.all(projectIds.map(async id => [id, await railwayProject(id)]));
+  const projects = Object.fromEntries(pairs);
+  return BOT_TARGETS.map(target => {
+    const project = projects[target.projectId];
+    const serviceNode = project?.services?.edges?.map(e => e.node).find(s => s.name === target.service);
+    const instances = serviceNode?.serviceInstances?.edges?.map(e => e.node) || [];
+    const deployment = instances.map(i => i.latestDeployment).filter(Boolean).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
+    return {
+      name: target.name,
+      project: target.project,
+      service: target.service,
+      status: deployment?.status || 'UNKNOWN',
+      deploymentId: deployment?.id || null,
+      createdAt: deployment?.createdAt || null
+    };
+  });
+}
+
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin || '';
 
@@ -75,8 +138,9 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, {
       name: 'Black Hole Backend',
       status: 'online',
-      version: '2.0.0',
+      version: '2.1.0',
       gptConfigured: Boolean(OPENAI_API_KEY),
+      botMonitorConfigured: Boolean(RAILWAY_API_TOKEN),
       timestamp: new Date().toISOString()
     }, origin);
   }
@@ -95,6 +159,22 @@ const server = http.createServer(async (req, res) => {
       platform: process.platform,
       timestamp: new Date().toISOString()
     }, origin);
+  }
+
+  if (req.method === 'GET' && req.url === '/bots-status') {
+    if (!RAILWAY_API_TOKEN) {
+      return sendJson(res, 200, {
+        configured: false,
+        bots: BOT_TARGETS.map(b => ({ name: b.name, project: b.project, service: b.service, status: 'UNKNOWN' }))
+      }, origin);
+    }
+    try {
+      const bots = await getBotStatuses();
+      return sendJson(res, 200, { configured: true, bots, timestamp: new Date().toISOString() }, origin);
+    } catch (err) {
+      console.error('Railway monitor error:', err.message);
+      return sendJson(res, 502, { configured: true, error: 'Could not read Railway bot status.' }, origin);
+    }
   }
 
   if (req.method === 'GET' && req.url === '/ai-status') {
