@@ -7,77 +7,49 @@
   <title>Black Hole Server</title>
   <style>
     :root{--bg:#050508;--panel:#0e0e14;--line:#242432;--text:#f4f4f7;--muted:#9a9aaa;--glow:#9b5cff;--ok:#56f39a;--bad:#ff6b7a;--warn:#ffd166}
-    *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(circle at 50% -10%,#25123f 0,#0b0712 28%,var(--bg) 60%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 24px)}
-    .wrap{max-width:760px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:800;font-size:22px;letter-spacing:.2px}
-    .badge{font-size:12px;border-radius:999px;padding:7px 10px;border:1px solid #4a3b1f;background:#231c0d;color:var(--warn)}
-    .badge.online{color:var(--ok);background:#0b2518;border-color:#164c31}.badge.offline{color:var(--bad);background:#2a1014;border-color:#5a2028}
-    .hero{background:linear-gradient(180deg,rgba(155,92,255,.18),rgba(155,92,255,.04));border:1px solid #35264b;border-radius:24px;padding:24px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.35)}
-    .hole{width:118px;height:118px;border-radius:50%;margin:4px auto 18px;background:radial-gradient(circle,#000 0 35%,#12081f 46%,#8e4df0 63%,transparent 70%);box-shadow:0 0 45px rgba(155,92,255,.55)}
-    h1{margin:0 0 8px;font-size:30px}p{color:var(--muted);margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;min-height:118px}.card h3{margin:8px 0 5px;font-size:16px}.icon{font-size:24px}.value{font-size:28px;font-weight:800;margin-top:8px}.muted{font-size:13px;color:var(--muted)}.wide{grid-column:1/-1}
-    .terminal{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border-radius:14px;padding:14px;color:#b8ffcf;font-size:13px;min-height:108px;white-space:pre-wrap;overflow-wrap:anywhere}
-    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.btn{border:1px solid #3a2b51;background:#171020;color:#fff;border-radius:14px;padding:13px 12px;font-weight:700;font-size:14px}.btn:active{transform:scale(.98)}
-    .footer{text-align:center;color:#6f6f7d;font-size:12px;margin-top:18px}@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.hero{padding:20px}.brand{font-size:20px}}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 50% -10%,#25123f 0,#0b0712 28%,var(--bg) 60%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:calc(env(safe-area-inset-top) + 18px) 16px calc(env(safe-area-inset-bottom) + 24px)}
+    .wrap{max-width:760px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-weight:800;font-size:22px}.badge{font-size:12px;border-radius:999px;padding:7px 10px;border:1px solid #4a3b1f;background:#231c0d;color:var(--warn)}.badge.online{color:var(--ok);background:#0b2518;border-color:#164c31}.badge.offline{color:var(--bad);background:#2a1014;border-color:#5a2028}
+    .hero{background:linear-gradient(180deg,rgba(155,92,255,.18),rgba(155,92,255,.04));border:1px solid #35264b;border-radius:24px;padding:24px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.35)}.hole{width:118px;height:118px;border-radius:50%;margin:4px auto 18px;background:radial-gradient(circle,#000 0 35%,#12081f 46%,#8e4df0 63%,transparent 70%);box-shadow:0 0 45px rgba(155,92,255,.55)}h1{margin:0 0 8px;font-size:30px}p{color:var(--muted);margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;min-height:118px}.card h3{margin:8px 0 5px;font-size:16px}.icon{font-size:24px}.value{font-size:28px;font-weight:800;margin-top:8px}.muted{font-size:13px;color:var(--muted)}.wide{grid-column:1/-1}
+    .terminal{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border-radius:14px;padding:14px;color:#b8ffcf;font-size:13px;min-height:108px;white-space:pre-wrap;overflow-wrap:anywhere}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.btn{border:1px solid #3a2b51;background:#171020;color:#fff;border-radius:14px;padding:13px 12px;font-weight:700;font-size:14px}.btn:active{transform:scale(.98)}
+    .chat{height:330px;overflow:auto;background:#07070b;border:1px solid #1d1d28;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;margin-top:12px}.msg{max-width:86%;padding:10px 12px;border-radius:14px;white-space:pre-wrap;line-height:1.35;font-size:14px}.user{align-self:flex-end;background:#2a1740;border:1px solid #4a2b6b}.ai{align-self:flex-start;background:#111119;border:1px solid #29293a}.chatrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}.chatinput{width:100%;background:#09090e;color:white;border:1px solid #2d2d3d;border-radius:14px;padding:13px;font-size:16px;outline:none}.send{min-width:72px}.footer{text-align:center;color:#6f6f7d;font-size:12px;margin-top:18px}@media(max-width:420px){.hero{padding:20px}.brand{font-size:20px}.grid{grid-template-columns:1fr 1fr}.chat{height:300px}}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div class="top"><div class="brand">🕳️ Black Hole Server</div><div class="badge" id="topBadge">● CHECKING</div></div>
-    <section class="hero"><div class="hole"></div><h1>Control Center</h1><p>Your personal mobile server dashboard.</p></section>
-    <section class="grid">
-      <div class="card"><div class="icon">⚡</div><h3>Backend Status</h3><div class="value" id="statusValue">Checking…</div><div class="muted" id="statusDetail">Contacting Railway backend</div></div>
-      <div class="card"><div class="icon">📦</div><h3>Projects</h3><div class="value">1</div><div class="muted">Black Hole Server</div></div>
-      <div class="card wide"><div class="icon">⌨️</div><h3>Terminal</h3><div class="terminal" id="terminal">blackhole@phone:~$ status\nConnecting to Black Hole Backend...</div><div class="actions"><button class="btn" onclick="runStatus()">Run Status</button><button class="btn" onclick="clearTerm()">Clear</button></div></div>
-      <div class="card"><div class="icon">📁</div><h3>Files</h3><div class="muted">File manager coming next.</div></div>
-      <div class="card"><div class="icon">🤖</div><h3>GPT Assistant</h3><div class="muted">Backend connected. GPT is next.</div></div>
-    </section>
-    <div class="footer">Black Hole Server v1.1 • Live Backend Edition</div>
-  </main>
-  <script>
-    const BACKEND = 'https://black-hole-backend-production.up.railway.app';
+<main class="wrap">
+  <div class="top"><div class="brand">🕳️ Black Hole Server</div><div class="badge" id="topBadge">● CHECKING</div></div>
+  <section class="hero"><div class="hole"></div><h1>Control Center</h1><p>Your personal mobile server dashboard.</p></section>
+  <section class="grid">
+    <div class="card"><div class="icon">⚡</div><h3>Backend Status</h3><div class="value" id="statusValue">Checking…</div><div class="muted" id="statusDetail">Contacting Railway backend</div></div>
+    <div class="card"><div class="icon">🤖</div><h3>GPT Status</h3><div class="value" id="gptValue">Checking…</div><div class="muted" id="gptDetail">Looking for API configuration</div></div>
+    <div class="card wide"><div class="icon">🤖</div><h3>Black Hole GPT</h3><div class="muted">Your AI assistant runs through the private Railway backend.</div><div class="chat" id="chat"><div class="msg ai">Black Hole GPT is loading…</div></div><div class="chatrow"><input id="chatInput" class="chatinput" placeholder="Ask Black Hole GPT…" maxlength="4000" /><button class="btn send" id="sendBtn" onclick="sendMessage()">Send</button></div></div>
+    <div class="card wide"><div class="icon">⌨️</div><h3>Terminal</h3><div class="terminal" id="terminal">blackhole@phone:~$ status\nConnecting to Black Hole Backend...</div><div class="actions"><button class="btn" onclick="runStatus()">Run Status</button><button class="btn" onclick="clearTerm()">Clear</button></div></div>
+    <div class="card"><div class="icon">📁</div><h3>Files</h3><div class="muted">File manager coming next.</div></div>
+    <div class="card"><div class="icon">📦</div><h3>Projects</h3><div class="value">1</div><div class="muted">Black Hole Server</div></div>
+  </section>
+  <div class="footer">Black Hole Server v1.2 • GPT Edition</div>
+</main>
+<script>
+const BACKEND='https://black-hole-backend-production.up.railway.app';
+let gptReady=false;
 
-    async function checkBackend(showInTerminal=false){
-      const badge=document.getElementById('topBadge');
-      const value=document.getElementById('statusValue');
-      const detail=document.getElementById('statusDetail');
-      const terminal=document.getElementById('terminal');
-      try{
-        const response=await fetch(`${BACKEND}/health`,{cache:'no-store'});
-        if(!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data=await response.json();
-        badge.textContent='● ONLINE';
-        badge.className='badge online';
-        value.textContent='Online';
-        detail.textContent=`${data.name || 'Backend'} • v${data.version || '1.0.0'}`;
-        if(showInTerminal){
-          terminal.textContent+=`\n\n$ status\n✓ Backend: online\n✓ API: reachable\n✓ Version: ${data.version || '1.0.0'}\n✓ Time: ${data.timestamp || 'ok'}`;
-        } else {
-          terminal.textContent='blackhole@phone:~$ status\n✓ Railway backend connected\nReady for commands...';
-        }
-        return data;
-      }catch(err){
-        badge.textContent='● OFFLINE';
-        badge.className='badge offline';
-        value.textContent='Offline';
-        detail.textContent='Could not reach Railway backend';
-        if(showInTerminal){
-          terminal.textContent+=`\n\n$ status\n✗ Backend unreachable\n${err.message}`;
-        } else {
-          terminal.textContent='blackhole@phone:~$ status\n✗ Backend unreachable\nTap Run Status to try again.';
-        }
-      }
-    }
+function addMessage(text,type){const chat=document.getElementById('chat');const el=document.createElement('div');el.className=`msg ${type}`;el.textContent=text;chat.appendChild(el);chat.scrollTop=chat.scrollHeight;return el;}
 
-    function runStatus(){
-      document.getElementById('terminal').textContent+='\n\n$ checking backend...';
-      checkBackend(true);
-    }
+async function checkBackend(showInTerminal=false){
+  const badge=document.getElementById('topBadge'),value=document.getElementById('statusValue'),detail=document.getElementById('statusDetail'),terminal=document.getElementById('terminal');
+  try{const response=await fetch(`${BACKEND}/health`,{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json();badge.textContent='● ONLINE';badge.className='badge online';value.textContent='Online';detail.textContent=`${data.name||'Backend'} • v${data.version||'1.0.0'}`;if(showInTerminal)terminal.textContent+=`\n\n$ status\n✓ Backend: online\n✓ API: reachable\n✓ Version: ${data.version||'1.0.0'}\n${data.gptConfigured?'✓ GPT: configured':'○ GPT: awaiting API key'}`;else terminal.textContent='blackhole@phone:~$ status\n✓ Railway backend connected\nReady for commands...';return data;}catch(err){badge.textContent='● OFFLINE';badge.className='badge offline';value.textContent='Offline';detail.textContent='Could not reach Railway backend';if(showInTerminal)terminal.textContent+=`\n\n$ status\n✗ Backend unreachable\n${err.message}`;else terminal.textContent='blackhole@phone:~$ status\n✗ Backend unreachable\nTap Run Status to try again.';}}
 
-    function clearTerm(){document.getElementById('terminal').textContent='blackhole@phone:~$ ';}
+async function checkGPT(){
+  const value=document.getElementById('gptValue'),detail=document.getElementById('gptDetail'),chat=document.getElementById('chat');
+  try{const r=await fetch(`${BACKEND}/ai-status`,{cache:'no-store'});const d=await r.json();gptReady=Boolean(d.configured);value.textContent=gptReady?'Ready':'Setup';detail.textContent=gptReady?`${d.model} connected`:'OpenAI API key needed';chat.innerHTML='';addMessage(gptReady?'Black Hole GPT online. What do you want to do?':'The GPT interface is installed. Add OPENAI_API_KEY to Railway to activate it.','ai');}catch{gptReady=false;value.textContent='Offline';detail.textContent='Could not check GPT status';}}
 
-    checkBackend();
-    setInterval(()=>checkBackend(false),60000);
-  </script>
+async function sendMessage(){
+  const input=document.getElementById('chatInput'),btn=document.getElementById('sendBtn'),message=input.value.trim();if(!message)return;if(!gptReady){addMessage('GPT is not activated yet. Add your OpenAI API key to Railway first.','ai');return;}addMessage(message,'user');input.value='';btn.disabled=true;btn.textContent='…';const waiting=addMessage('Thinking…','ai');
+  try{const r=await fetch(`${BACKEND}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})});const d=await r.json();waiting.remove();if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);addMessage(d.reply,'ai');}catch(err){waiting.remove();addMessage(`Error: ${err.message}`,'ai');}finally{btn.disabled=false;btn.textContent='Send';input.focus();}}
+
+function runStatus(){document.getElementById('terminal').textContent+='\n\n$ checking backend...';checkBackend(true);checkGPT();}
+function clearTerm(){document.getElementById('terminal').textContent='blackhole@phone:~$ ';}
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+checkBackend();checkGPT();setInterval(()=>checkBackend(false),60000);
+</script>
 </body>
 </html>
