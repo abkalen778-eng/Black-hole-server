@@ -1,0 +1,9 @@
+{
+  "name": "Black Hole Server",
+  "short_name": "Black Hole",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#050508",
+  "theme_color": "#050508",
+  "description": "Personal mobile coding cloud and server dashboard"
+}
