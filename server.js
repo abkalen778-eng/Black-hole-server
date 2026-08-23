@@ -3,6 +3,7 @@ const http = require('http');
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ALLOWED_ORIGIN = 'https://abkalen778-eng.github.io';
+const STARTED_AT = Date.now();
 
 const rate = new Map();
 function rateLimited(ip) {
@@ -74,8 +75,24 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, {
       name: 'Black Hole Backend',
       status: 'online',
-      version: '1.2.0',
+      version: '2.0.0',
       gptConfigured: Boolean(OPENAI_API_KEY),
+      timestamp: new Date().toISOString()
+    }, origin);
+  }
+
+  if (req.method === 'GET' && req.url === '/stats') {
+    const mem = process.memoryUsage();
+    return sendJson(res, 200, {
+      status: 'online',
+      uptimeSeconds: Math.floor((Date.now() - STARTED_AT) / 1000),
+      memoryMB: {
+        rss: Math.round(mem.rss / 1024 / 1024),
+        heapUsed: Math.round(mem.heapUsed / 1024 / 1024),
+        heapTotal: Math.round(mem.heapTotal / 1024 / 1024)
+      },
+      node: process.version,
+      platform: process.platform,
       timestamp: new Date().toISOString()
     }, origin);
   }
