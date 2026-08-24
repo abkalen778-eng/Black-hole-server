@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050508">
+<title>Black Hole Codex</title>
+<style>
+:root{--bg:#050508;--panel:#0e0e14;--line:#272738;--text:#f4f4f7;--muted:#9a9aaa;--ok:#56f39a;--bad:#ff6b7a;--purple:#9b5cff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#25123f 0,#0b0712 30%,var(--bg) 62%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:calc(env(safe-area-inset-top) + 16px) 14px calc(env(safe-area-inset-bottom) + 24px)}.wrap{max-width:780px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}.brand{font-weight:850;font-size:20px}.back,.btn{border:1px solid #3a2b51;background:#171020;color:#fff;border-radius:12px;padding:10px 12px;text-decoration:none;font-weight:750}.hero,.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}.hero{background:linear-gradient(180deg,rgba(155,92,255,.17),rgba(155,92,255,.04));border-color:#35264b}.hero h1{margin:0 0 6px}.muted{color:var(--muted);font-size:13px}.field,.prompt{width:100%;background:#08080d;color:#fff;border:1px solid #2d2d3d;border-radius:12px;padding:11px;outline:none}.prompt{min-height:160px;resize:vertical}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.output{background:#07070b;border:1px solid #1d1d28;border-radius:14px;padding:12px;white-space:pre-wrap;line-height:1.4;min-height:120px;font-size:14px}.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:6px 9px;border:1px solid #164c31;background:#0b2518;color:var(--ok)}.badge.off{border-color:#5a2028;background:#2a1014;color:var(--bad)}
+</style>
+</head><body><main class="wrap">
+<div class="top"><div class="brand">🕳️ Black Hole Codex</div><a class="back" href="./">← Dashboard</a></div>
+<section class="hero"><h1>Codex Coding Agent</h1><p class="muted">Connected to your server in read-only mode. It can inspect the deployed Black Hole code and propose changes without editing or running unrestricted commands.</p></section>
+<section class="card"><div id="status" class="badge">CHECKING</div><p class="muted" style="margin-top:10px">Enter the private Codex access key once on this device.</p><input id="key" class="field" type="password" placeholder="Codex access key"><div class="row"><button class="btn" onclick="saveKey()">Save Key</button><button class="btn" onclick="clearKey()">Clear</button></div></section>
+<section class="card"><textarea id="prompt" class="prompt" placeholder="Example: Inspect this project and tell me how to add a login page safely."></textarea><div class="row"><button id="run" class="btn" onclick="runCodex()">Run Codex</button></div></section>
+<section class="card"><div id="out" class="output">Codex is ready for a request.</div></section>
+</main><script>
+const API='https://black-hole-codex-production.up.railway.app';
+const keyEl=document.getElementById('key'),out=document.getElementById('out'),statusEl=document.getElementById('status');
+keyEl.value=localStorage.getItem('blackHoleCodexKey')||'';
+function saveKey(){localStorage.setItem('blackHoleCodexKey',keyEl.value.trim());out.textContent='Access key saved on this device.'}function clearKey(){localStorage.removeItem('blackHoleCodexKey');keyEl.value='';out.textContent='Access key removed.'}
+async function health(){try{const r=await fetch(API+'/health',{cache:'no-store'});const d=await r.json();statusEl.textContent=d.configured?'ONLINE • READ ONLY':'ONLINE • SETUP';statusEl.className='badge';}catch{statusEl.textContent='OFFLINE';statusEl.className='badge off'}}
+async function runCodex(){const prompt=document.getElementById('prompt').value.trim(),key=keyEl.value.trim(),btn=document.getElementById('run');if(!prompt){out.textContent='Type a coding request first.';return}if(!key){out.textContent='Enter your Codex access key first.';return}btn.disabled=true;btn.textContent='Working…';out.textContent='Codex is inspecting the project…';try{const r=await fetch(API+'/codex',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({prompt})});const d=await r.json();if(!r.ok)throw new Error(d.detail||d.error||('HTTP '+r.status));out.textContent=d.reply||'No response.';}catch(e){out.textContent='Error: '+e.message}finally{btn.disabled=false;btn.textContent='Run Codex'}}
+health();
+</script></body></html>
