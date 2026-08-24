@@ -40,6 +40,7 @@
       <div class="card"><div class="icon">⏱️</div><h3>Latency</h3><div class="value" id="latency">—</div><div class="muted">Phone → backend</div></div>
       <div class="card"><div class="icon">🧠</div><h3>Memory</h3><div class="value" id="memory">—</div><div class="muted" id="memoryDetail">Backend RAM</div></div>
       <div class="card"><div class="icon">🕒</div><h3>Uptime</h3><div class="value" id="uptime">—</div><div class="muted">Current container</div></div>
+      <div class="card wide"><div class="icon">🐙</div><h3>GitHub Manager</h3><div class="muted">Browse repositories, branches and recent commits from Black Hole Server.</div><div class="actions"><button class="btn" onclick="window.location.href='github.html'">Open GitHub Manager</button></div></div>
       <div class="card wide"><div class="icon">🌾</div><h3>Black Hole Farms</h3><div class="muted">Open your Data Farm and Scanner Farm from one place.</div><div class="actions"><button class="btn" onclick="showPage('farms')">Open Farms</button></div></div>
       <div class="card wide"><div class="icon">🤖</div><h3>Discord Bot Monitor</h3><div class="muted">Check the live health of your Railway-hosted Discord bots.</div><div class="actions"><button class="btn" onclick="showPage('bots')">Open Bot Monitor</button></div></div>
       <div class="card wide"><div class="icon">⌨️</div><h3>Server Console</h3><div class="terminal" id="terminal">blackhole@cloud:~$ status\nConnecting...</div><div class="actions"><button class="btn" onclick="refreshStats(true)">Refresh</button><button class="btn" onclick="clearTerm()">Clear</button></div></div>
@@ -61,7 +62,7 @@
   <section id="projects" class="page">
     <div class="grid">
       <div class="card wide"><div class="icon">📦</div><h3>Project Manager</h3><div class="muted">Projects are saved on this iPhone/browser for now.</div><div class="actions"><input id="projectName" class="field" placeholder="Project name" style="flex:1;min-width:180px"><button class="btn" onclick="newProject()">New</button></div><div id="projectList" class="list"></div></div>
-      <div class="card wide"><div class="icon">🐙</div><h3>GitHub</h3><div class="muted">Open the source repository for Black Hole Server.</div><div class="actions"><button class="btn" onclick="window.open('https://github.com/abkalen778-eng/Black-hole-server','_blank')">Open Repository</button></div></div>
+      <div class="card wide"><div class="icon">🐙</div><h3>GitHub</h3><div class="muted">Open the source repository for Black Hole Server.</div><div class="actions"><button class="btn" onclick="window.open('https://github.com/abkalen778-eng/Black-hole-server','_blank')">Open Repository</button><button class="btn" onclick="window.location.href='github.html'">GitHub Manager</button></div></div>
     </div>
   </section>
 
@@ -87,13 +88,15 @@
 
   <section id="tools" class="page">
     <div class="grid">
+      <div class="card"><div class="icon">🧑‍💻</div><h3>Black Hole Coder</h3><div class="muted">Your custom Gemini-powered coding bot.</div><div class="actions"><button class="btn" onclick="window.location.href='coder.html'">Open Coder</button></div></div>
+      <div class="card"><div class="icon">🐙</div><h3>GitHub Manager</h3><div class="muted">Inspect repositories, branches and commit history.</div><div class="actions"><button class="btn" onclick="window.location.href='github.html'">Open Manager</button></div></div>
       <div class="card wide"><div class="icon">🔌</div><h3>API Lab</h3><div class="muted">Test GET requests from your phone.</div><input id="apiUrl" class="field" value="https://black-hole-backend-production.up.railway.app/health" style="margin-top:10px"><div class="actions"><button class="btn" onclick="testApi()">Send GET</button></div><div class="output" id="apiOutput">Ready.</div></div>
       <div class="card"><div class="icon">📲</div><h3>App Mode</h3><div class="muted">Add this site to your iPhone Home Screen to launch it like an app.</div></div>
       <div class="card"><div class="icon">🛡️</div><h3>Safe Runner</h3><div class="muted">Code preview is isolated in a sandbox instead of running server commands.</div></div>
     </div>
   </section>
 
-  <div class="footer">Black Hole Server v2.4 • Mobile Coding Cloud</div>
+  <div class="footer">Black Hole Server v2.6 • Mobile Coding Cloud</div>
 </main>
 <script>
 const BACKEND='https://black-hole-backend-production.up.railway.app';
