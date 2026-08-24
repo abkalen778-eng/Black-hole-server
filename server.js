@@ -1,16 +1,25 @@
 const http = require('http');
+const { Pool } = require('pg');
 
 const PORT = process.env.PORT || 3000;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const RAILWAY_API_TOKEN = process.env.RAILWAY_API_TOKEN;
+const DATABASE_URL = process.env.DATABASE_URL;
 const ALLOWED_ORIGIN = 'https://abkalen778-eng.github.io';
 const STARTED_AT = Date.now();
+const COLLECT_INTERVAL_MS = 5 * 60 * 1000;
 
 const BOT_TARGETS = [
   { name: 'Pump.fun Scanner', projectId: '2dc1806a-8c98-48a4-a3ed-caf205c5d814', project: 'zestful-perception', service: 'Pumpfun-discord-scanner' },
   { name: 'FanDuel Scanner', projectId: '9c1a6087-6afa-4530-a874-269684ec0fdb', project: 'faithful-adaptation', service: 'FanDuel-scanner' },
   { name: 'Pocket Option Bot', projectId: '9c1a6087-6afa-4530-a874-269684ec0fdb', project: 'faithful-adaptation', service: 'Pumpfun-discord-scanner' }
 ];
+
+const pool = DATABASE_URL ? new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false }, max: 4 }) : null;
+let dbReady = false;
+let lastCollection = null;
+let lastCollectionError = null;
+let collecting = false;
 
 const rate = new Map();
 function rateLimited(ip) {
@@ -64,6 +73,95 @@ function extractText(data) {
   return '';
 }
 
+async function initDatabase() {
+  if (!pool) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS data_points (
+      id BIGSERIAL PRIMARY KEY,
+      source TEXT NOT NULL,
+      metric TEXT NOT NULL,
+      value_numeric DOUBLE PRECISION,
+      value_text TEXT,
+      unit TEXT,
+      collected_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_data_points_metric_time
+      ON data_points(metric, collected_at DESC);
+  `);
+  dbReady = true;
+}
+
+async function insertPoint(source, metric, valueNumeric, valueText, unit) {
+  if (!pool || !dbReady) return;
+  await pool.query(
+    'INSERT INTO data_points(source, metric, value_numeric, value_text, unit) VALUES($1,$2,$3,$4,$5)',
+    [source, metric, valueNumeric ?? null, valueText ?? null, unit ?? null]
+  );
+}
+
+async function collectCrypto() {
+  const url = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple&vs_currencies=usd';
+  const response = await fetch(url, { headers: { 'User-Agent': 'Black-Hole-Data-Farm/1.0' } });
+  if (!response.ok) throw new Error(`CoinGecko HTTP ${response.status}`);
+  const data = await response.json();
+  const points = [
+    ['btc_usd', data.bitcoin?.usd],
+    ['eth_usd', data.ethereum?.usd],
+    ['xrp_usd', data.ripple?.usd]
+  ];
+  for (const [metric, value] of points) {
+    if (Number.isFinite(value)) await insertPoint('coingecko', metric, value, null, 'USD');
+  }
+}
+
+async function collectServerHealth() {
+  const mem = process.memoryUsage();
+  await insertPoint('black-hole-backend', 'backend_uptime_seconds', Math.floor((Date.now() - STARTED_AT) / 1000), null, 'seconds');
+  await insertPoint('black-hole-backend', 'backend_memory_mb', Math.round(mem.rss / 1024 / 1024), null, 'MB');
+  await insertPoint('black-hole-backend', 'backend_status', null, 'online', null);
+}
+
+async function runCollectors() {
+  if (!dbReady || collecting) return;
+  collecting = true;
+  try {
+    const results = await Promise.allSettled([collectCrypto(), collectServerHealth()]);
+    const failed = results.filter(r => r.status === 'rejected');
+    lastCollection = new Date().toISOString();
+    lastCollectionError = failed.length ? failed.map(r => r.reason?.message || 'collector failed').join('; ') : null;
+    if (lastCollectionError) console.error('Data farm collector warning:', lastCollectionError);
+  } catch (err) {
+    lastCollectionError = err.message;
+    console.error('Data farm collector error:', err.message);
+  } finally {
+    collecting = false;
+  }
+}
+
+async function latestData() {
+  if (!pool || !dbReady) return [];
+  const { rows } = await pool.query(`
+    SELECT DISTINCT ON (metric)
+      source, metric, value_numeric, value_text, unit, collected_at
+    FROM data_points
+    ORDER BY metric, collected_at DESC
+  `);
+  return rows;
+}
+
+async function historyData(metric, limit = 100) {
+  if (!pool || !dbReady) return [];
+  const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 500);
+  const { rows } = await pool.query(`
+    SELECT source, metric, value_numeric, value_text, unit, collected_at
+    FROM data_points
+    WHERE metric = $1
+    ORDER BY collected_at DESC
+    LIMIT $2
+  `, [metric, safeLimit]);
+  return rows.reverse();
+}
+
 async function railwayProject(projectId) {
   const query = `query project($id: String!) {
     project(id: $id) {
@@ -74,9 +172,7 @@ async function railwayProject(projectId) {
             name
             serviceInstances {
               edges {
-                node {
-                  latestDeployment { id status createdAt }
-                }
+                node { latestDeployment { id status createdAt } }
               }
             }
           }
@@ -122,6 +218,7 @@ async function getBotStatuses() {
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin || '';
+  const url = new URL(req.url, 'http://localhost');
 
   if (req.method === 'OPTIONS') {
     if (origin === ALLOWED_ORIGIN) {
@@ -134,18 +231,20 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  if (req.method === 'GET' && (req.url === '/' || req.url === '/health')) {
+  if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/health')) {
     return sendJson(res, 200, {
       name: 'Black Hole Backend',
       status: 'online',
-      version: '2.1.0',
+      version: '2.3.0',
       gptConfigured: Boolean(OPENAI_API_KEY),
       botMonitorConfigured: Boolean(RAILWAY_API_TOKEN),
+      dataFarmConfigured: Boolean(DATABASE_URL),
+      dataFarmReady: dbReady,
       timestamp: new Date().toISOString()
     }, origin);
   }
 
-  if (req.method === 'GET' && req.url === '/stats') {
+  if (req.method === 'GET' && url.pathname === '/stats') {
     const mem = process.memoryUsage();
     return sendJson(res, 200, {
       status: 'online',
@@ -161,7 +260,55 @@ const server = http.createServer(async (req, res) => {
     }, origin);
   }
 
-  if (req.method === 'GET' && req.url === '/bots-status') {
+  if (req.method === 'GET' && url.pathname === '/data-farm/status') {
+    let count = 0;
+    if (pool && dbReady) {
+      try {
+        const result = await pool.query('SELECT COUNT(*)::int AS count FROM data_points');
+        count = result.rows[0]?.count || 0;
+      } catch {}
+    }
+    return sendJson(res, 200, {
+      configured: Boolean(DATABASE_URL),
+      ready: dbReady,
+      collecting,
+      collectionIntervalMinutes: COLLECT_INTERVAL_MS / 60000,
+      lastCollection,
+      lastCollectionError,
+      records: count,
+      collectors: ['crypto', 'server-health'],
+      planned: ['weather']
+    }, origin);
+  }
+
+  if (req.method === 'GET' && url.pathname === '/data-farm/latest') {
+    if (!dbReady) return sendJson(res, 503, { error: 'Data farm database is not ready yet.' }, origin);
+    try {
+      return sendJson(res, 200, { data: await latestData(), timestamp: new Date().toISOString() }, origin);
+    } catch (err) {
+      return sendJson(res, 500, { error: 'Could not read data farm.' }, origin);
+    }
+  }
+
+  if (req.method === 'GET' && url.pathname === '/data-farm/history') {
+    const metric = (url.searchParams.get('metric') || '').trim();
+    if (!metric) return sendJson(res, 400, { error: 'metric is required' }, origin);
+    if (!dbReady) return sendJson(res, 503, { error: 'Data farm database is not ready yet.' }, origin);
+    try {
+      return sendJson(res, 200, { metric, data: await historyData(metric, url.searchParams.get('limit')) }, origin);
+    } catch {
+      return sendJson(res, 500, { error: 'Could not read history.' }, origin);
+    }
+  }
+
+  if (req.method === 'POST' && url.pathname === '/data-farm/collect') {
+    if (origin !== ALLOWED_ORIGIN) return sendJson(res, 403, { error: 'Origin not allowed' }, origin);
+    if (!dbReady) return sendJson(res, 503, { error: 'Data farm database is not ready yet.' }, origin);
+    await runCollectors();
+    return sendJson(res, 200, { ok: true, lastCollection, lastCollectionError }, origin);
+  }
+
+  if (req.method === 'GET' && url.pathname === '/bots-status') {
     if (!RAILWAY_API_TOKEN) {
       return sendJson(res, 200, {
         configured: false,
@@ -177,14 +324,14 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (req.method === 'GET' && req.url === '/ai-status') {
+  if (req.method === 'GET' && url.pathname === '/ai-status') {
     return sendJson(res, 200, {
       configured: Boolean(OPENAI_API_KEY),
       model: 'gpt-5.6-luna'
     }, origin);
   }
 
-  if (req.method === 'POST' && req.url === '/chat') {
+  if (req.method === 'POST' && url.pathname === '/chat') {
     if (origin !== ALLOWED_ORIGIN) {
       return sendJson(res, 403, { error: 'Origin not allowed' }, origin);
     }
@@ -237,6 +384,17 @@ const server = http.createServer(async (req, res) => {
   return sendJson(res, 404, { error: 'Not found' }, origin);
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
   console.log(`Black Hole Backend listening on port ${PORT}`);
+  try {
+    await initDatabase();
+    if (dbReady) {
+      console.log('Black Hole Data Farm database ready');
+      await runCollectors();
+      setInterval(runCollectors, COLLECT_INTERVAL_MS);
+    }
+  } catch (err) {
+    lastCollectionError = `Database init failed: ${err.message}`;
+    console.error(lastCollectionError);
+  }
 });
