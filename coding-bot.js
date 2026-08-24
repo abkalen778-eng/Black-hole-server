@@ -2,10 +2,11 @@ const http = require('http');
 
 const PORT = process.env.PORT || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = process.env.CODING_MODEL || 'gemini-3.7-flash';
+const MODEL = process.env.CODING_MODEL || 'gemini-3.5-flash-lite';
 const ALLOWED_ORIGIN = 'https://abkalen778-eng.github.io';
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT = 12;
+const REQUEST_TIMEOUT_MS = 40_000;
 const rate = new Map();
 
 function sendJson(res, status, body, origin='') {
@@ -58,14 +59,14 @@ const SYSTEM = `You are Black Hole Coder, a custom coding assistant built for th
 Supported languages and technologies include Python, JavaScript, TypeScript, HTML, CSS, Node.js, SQL, Java, C, C++, C#, Go, Rust, Bash, JSON, YAML, React, Express, and PostgreSQL.
 
 Rules:
-- Give complete working code when practical.
+- Return working code quickly.
+- Prefer concise answers unless the user asks for detail.
 - Prefer secure defaults.
 - Explain file names and where code goes.
 - Never claim code was executed or deployed unless the calling application actually did that.
 - For destructive or security-sensitive actions, explain the risk and require explicit approval in the surrounding app before making changes.
-- When asked to build an app, return a concise plan followed by the code needed for the first usable version.
-- If the user provides an error, identify the likely cause and give a concrete fix.
-- Keep answers mobile-friendly but technically useful.`;
+- When asked to build an app, give the smallest usable version first.
+- If the user provides an error, identify the likely cause and give a concrete fix.`;
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin || '';
@@ -105,18 +106,30 @@ const server = http.createServer(async (req, res) => {
       if (!prompt || prompt.length > 8000) return sendJson(res, 400, { error: 'Prompt must be between 1 and 8000 characters.' }, origin);
 
       const userText = `Preferred language/stack: ${language}\n\nUser request:\n${prompt}`;
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
-        method: 'POST',
-        headers: {
-          'x-goog-api-key': GEMINI_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: 'user', parts: [{ text: userText }] }],
-          generationConfig: { thinkingConfig: { thinkingLevel: 'medium' } }
-        })
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      let response;
+      try {
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`, {
+          method: 'POST',
+          headers: {
+            'x-goog-api-key': GEMINI_API_KEY,
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal,
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM }] },
+            contents: [{ role: 'user', parts: [{ text: userText }] }],
+            generationConfig: {
+              maxOutputTokens: 1200,
+              thinkingConfig: { thinkingLevel: 'minimal' }
+            }
+          })
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
+
       const data = await response.json();
       if (!response.ok) {
         const msg = data?.error?.message || `Gemini request failed with HTTP ${response.status}`;
@@ -127,6 +140,9 @@ const server = http.createServer(async (req, res) => {
       if (!reply) return sendJson(res, 502, { error: 'Gemini returned no text.' }, origin);
       return sendJson(res, 200, { reply, model: MODEL, provider: 'Google Gemini' }, origin);
     } catch (err) {
+      if (err?.name === 'AbortError') {
+        return sendJson(res, 504, { error: 'The coding model took too long. Try a shorter request.' }, origin);
+      }
       console.error('Generate error:', err.message);
       return sendJson(res, 500, { error: err.message || 'Could not process request.' }, origin);
     }
