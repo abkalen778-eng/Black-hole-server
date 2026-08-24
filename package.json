@@ -1,11 +1,14 @@
 {
   "name": "black-hole-server",
-  "version": "1.0.0",
+  "version": "2.3.0",
   "private": true,
   "description": "Backend for the Black Hole Server phone dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
   },
   "engines": {
     "node": ">=20"
