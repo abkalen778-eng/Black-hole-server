@@ -11,12 +11,12 @@
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#25123f 0,#0b0712 28%,var(--bg) 60%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px)}
     button,input,textarea,select{font:inherit}.wrap{max-width:860px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.brand{font-weight:850;font-size:22px}.badge{font-size:12px;border-radius:999px;padding:7px 10px;border:1px solid #4a3b1f;background:#231c0d;color:var(--warn)}.badge.online{color:var(--ok);background:#0b2518;border-color:#164c31}.badge.offline{color:var(--bad);background:#2a1014;border-color:#5a2028}
     .hero{background:linear-gradient(180deg,rgba(155,92,255,.18),rgba(155,92,255,.04));border:1px solid #35264b;border-radius:24px;padding:20px;text-align:center}.hole{width:88px;height:88px;border-radius:50%;margin:2px auto 12px;background:radial-gradient(circle,#000 0 35%,#12081f 46%,#8e4df0 63%,transparent 70%);box-shadow:0 0 35px rgba(155,92,255,.55)}h1{margin:0 0 6px;font-size:28px}p{color:var(--muted);margin:0}
-    .nav{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:14px 0}.nav button,.btn{border:1px solid #3a2b51;background:#171020;color:#fff;border-radius:13px;padding:11px 8px;font-weight:750;font-size:13px}.nav button.active{background:#2a1740;border-color:#7543aa}.btn:active,.nav button:active{transform:scale(.98)}
+    .nav{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:14px 0}.nav button,.btn{border:1px solid #3a2b51;background:#171020;color:#fff;border-radius:13px;padding:11px 8px;font-weight:750;font-size:13px}.nav button.active{background:#2a1740;border-color:#7543aa}.btn:active,.nav button:active{transform:scale(.98)}
     .page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;min-height:108px}.wide{grid-column:1/-1}.card h3{margin:6px 0;font-size:16px}.icon{font-size:22px}.value{font-size:26px;font-weight:850;margin-top:7px}.muted{font-size:13px;color:var(--muted)}
     .terminal,.output{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border-radius:13px;padding:12px;color:#b8ffcf;font-size:12px;min-height:90px;white-space:pre-wrap;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .field,.editor{width:100%;background:#08080d;color:#fff;border:1px solid #2d2d3d;border-radius:12px;padding:11px;outline:none}.editor{min-height:210px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;resize:vertical}.small{min-height:120px}.tabs{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}.tabs button{padding:8px 10px;border-radius:10px;border:1px solid #313141;background:#101018;color:#ddd}.tabs button.active{background:#2a1740;color:white}.preview{width:100%;height:260px;background:white;border:0;border-radius:12px;margin-top:10px}.list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.project{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px;background:#09090e;border:1px solid #232332;border-radius:12px}.project strong{font-size:14px}.project span{font-size:12px;color:var(--muted)}
     .chat{height:300px;overflow:auto;background:#07070b;border:1px solid #1d1d28;border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:9px}.msg{max-width:86%;padding:9px 11px;border-radius:13px;white-space:pre-wrap;line-height:1.35;font-size:14px}.user{align-self:flex-end;background:#2a1740;border:1px solid #4a2b6b}.ai{align-self:flex-start;background:#111119;border:1px solid #29293a}.chatrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px}.footer{text-align:center;color:#666677;font-size:12px;margin-top:16px}
-    @media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.nav{grid-template-columns:repeat(3,1fr)}.nav button{font-size:11px;padding:9px 4px}.brand{font-size:19px}.hero{padding:17px}.editor{min-height:190px}}
+    @media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.nav{grid-template-columns:repeat(4,1fr)}.nav button{font-size:11px;padding:9px 4px}.brand{font-size:19px}.hero{padding:17px}.editor{min-height:190px}}
   </style>
 </head>
 <body>
@@ -30,6 +30,7 @@
     <button data-page="projects">Projects</button>
     <button data-page="gpt">GPT</button>
     <button data-page="bots">Bots</button>
+    <button data-page="farms">Farms</button>
     <button data-page="tools">Tools</button>
   </nav>
 
@@ -39,6 +40,7 @@
       <div class="card"><div class="icon">⏱️</div><h3>Latency</h3><div class="value" id="latency">—</div><div class="muted">Phone → backend</div></div>
       <div class="card"><div class="icon">🧠</div><h3>Memory</h3><div class="value" id="memory">—</div><div class="muted" id="memoryDetail">Backend RAM</div></div>
       <div class="card"><div class="icon">🕒</div><h3>Uptime</h3><div class="value" id="uptime">—</div><div class="muted">Current container</div></div>
+      <div class="card wide"><div class="icon">🌾</div><h3>Black Hole Farms</h3><div class="muted">Open your Data Farm and Scanner Farm from one place.</div><div class="actions"><button class="btn" onclick="showPage('farms')">Open Farms</button></div></div>
       <div class="card wide"><div class="icon">🤖</div><h3>Discord Bot Monitor</h3><div class="muted">Check the live health of your Railway-hosted Discord bots.</div><div class="actions"><button class="btn" onclick="showPage('bots')">Open Bot Monitor</button></div></div>
       <div class="card wide"><div class="icon">⌨️</div><h3>Server Console</h3><div class="terminal" id="terminal">blackhole@cloud:~$ status\nConnecting...</div><div class="actions"><button class="btn" onclick="refreshStats(true)">Refresh</button><button class="btn" onclick="clearTerm()">Clear</button></div></div>
     </div>
@@ -75,6 +77,14 @@
     </div>
   </section>
 
+  <section id="farms" class="page">
+    <div class="grid">
+      <div class="card wide"><div class="icon">🌾</div><h3>Black Hole Farms</h3><div class="muted">Your automated data collection and scanning systems.</div></div>
+      <div class="card"><div class="icon">🗄️</div><h3>Data Farm</h3><div class="muted">Collects crypto prices and server-health data into PostgreSQL every 5 minutes.</div><div class="actions"><button class="btn" onclick="window.location.href='data.html'">Open Data Farm</button></div></div>
+      <div class="card"><div class="icon">📡</div><h3>Scanner Farm</h3><div class="muted">Runs server, API, bot-health, and crypto-movement scanners from Railway.</div><div class="actions"><button class="btn" onclick="window.location.href='scanners.html'">Open Scanner Farm</button></div></div>
+    </div>
+  </section>
+
   <section id="tools" class="page">
     <div class="grid">
       <div class="card wide"><div class="icon">🔌</div><h3>API Lab</h3><div class="muted">Test GET requests from your phone.</div><input id="apiUrl" class="field" value="https://black-hole-backend-production.up.railway.app/health" style="margin-top:10px"><div class="actions"><button class="btn" onclick="testApi()">Send GET</button></div><div class="output" id="apiOutput">Ready.</div></div>
@@ -83,39 +93,17 @@
     </div>
   </section>
 
-  <div class="footer">Black Hole Server v2.2 • Mobile Coding Cloud</div>
+  <div class="footer">Black Hole Server v2.4 • Mobile Coding Cloud</div>
 </main>
 <script>
 const BACKEND='https://black-hole-backend-production.up.railway.app';
 let gptReady=false;
 let currentProject='Starter Project';
-
 function addMessage(text,type){const chat=document.getElementById('chat');const el=document.createElement('div');el.className=`msg ${type}`;el.textContent=text;chat.appendChild(el);chat.scrollTop=chat.scrollHeight;return el;}
 function fmtUptime(s){s=Number(s)||0;if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d';}
-
-async function refreshStats(showTerminal=false){
-  const started=performance.now();
-  try{
-    const [healthRes,statsRes]=await Promise.all([fetch(`${BACKEND}/health`,{cache:'no-store'}),fetch(`${BACKEND}/stats`,{cache:'no-store'})]);
-    if(!healthRes.ok||!statsRes.ok)throw new Error('Backend request failed');
-    const h=await healthRes.json(),s=await statsRes.json();
-    const ms=Math.round(performance.now()-started);
-    document.getElementById('topBadge').textContent='● ONLINE';document.getElementById('topBadge').className='badge online';
-    document.getElementById('statusValue').textContent='Online';document.getElementById('statusDetail').textContent=`${h.name} • v${h.version}`;
-    document.getElementById('latency').textContent=ms+'ms';document.getElementById('memory').textContent=s.memoryMB.rss+' MB';document.getElementById('memoryDetail').textContent=`Heap ${s.memoryMB.heapUsed}/${s.memoryMB.heapTotal} MB`;
-    document.getElementById('uptime').textContent=fmtUptime(s.uptimeSeconds);
-    if(showTerminal)document.getElementById('terminal').textContent+=`\n\n$ stats\n✓ Backend online\n✓ Latency ${ms}ms\n✓ Memory ${s.memoryMB.rss} MB\n✓ Uptime ${fmtUptime(s.uptimeSeconds)}\n✓ Node ${s.node}`;
-    else document.getElementById('terminal').textContent='blackhole@cloud:~$ status\n✓ Railway backend connected\n✓ Coding workspace ready';
-  }catch(err){document.getElementById('topBadge').textContent='● OFFLINE';document.getElementById('topBadge').className='badge offline';document.getElementById('statusValue').textContent='Offline';document.getElementById('statusDetail').textContent='Could not reach backend';if(showTerminal)document.getElementById('terminal').textContent+=`\n✗ ${err.message}`;}
-}
+async function refreshStats(showTerminal=false){const started=performance.now();try{const [healthRes,statsRes]=await Promise.all([fetch(`${BACKEND}/health`,{cache:'no-store'}),fetch(`${BACKEND}/stats`,{cache:'no-store'})]);if(!healthRes.ok||!statsRes.ok)throw new Error('Backend request failed');const h=await healthRes.json(),s=await statsRes.json();const ms=Math.round(performance.now()-started);document.getElementById('topBadge').textContent='● ONLINE';document.getElementById('topBadge').className='badge online';document.getElementById('statusValue').textContent='Online';document.getElementById('statusDetail').textContent=`${h.name} • v${h.version}`;document.getElementById('latency').textContent=ms+'ms';document.getElementById('memory').textContent=s.memoryMB.rss+' MB';document.getElementById('memoryDetail').textContent=`Heap ${s.memoryMB.heapUsed}/${s.memoryMB.heapTotal} MB`;document.getElementById('uptime').textContent=fmtUptime(s.uptimeSeconds);if(showTerminal)document.getElementById('terminal').textContent+=`\n\n$ stats\n✓ Backend online\n✓ Latency ${ms}ms\n✓ Memory ${s.memoryMB.rss} MB\n✓ Uptime ${fmtUptime(s.uptimeSeconds)}\n✓ Node ${s.node}`;else document.getElementById('terminal').textContent='blackhole@cloud:~$ status\n✓ Railway backend connected\n✓ Coding workspace ready';}catch(err){document.getElementById('topBadge').textContent='● OFFLINE';document.getElementById('topBadge').className='badge offline';document.getElementById('statusValue').textContent='Offline';document.getElementById('statusDetail').textContent='Could not reach backend';if(showTerminal)document.getElementById('terminal').textContent+=`\n✗ ${err.message}`;}}
 function clearTerm(){document.getElementById('terminal').textContent='blackhole@cloud:~$ ';}
-
-function runCode(){
-  const html=document.getElementById('htmlEditor').value,css=document.getElementById('cssEditor').value,js=document.getElementById('jsEditor').value;
-  const csp="<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'\">";
-  document.getElementById('preview').srcdoc=`<!doctype html><html><head>${csp}<style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
-}
-
+function runCode(){const html=document.getElementById('htmlEditor').value,css=document.getElementById('cssEditor').value,js=document.getElementById('jsEditor').value;const csp="<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'\">";document.getElementById('preview').srcdoc=`<!doctype html><html><head>${csp}<style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;}
 function getProjects(){try{return JSON.parse(localStorage.getItem('blackHoleProjects')||'{}')}catch{return {}}}
 function setProjects(p){localStorage.setItem('blackHoleProjects',JSON.stringify(p));renderProjects();}
 function saveCurrentProject(){const p=getProjects();p[currentProject]={html:htmlEditor.value,css:cssEditor.value,js:jsEditor.value,updated:new Date().toISOString()};setProjects(p);alert('Saved '+currentProject);}
@@ -123,12 +111,9 @@ function newProject(){const name=document.getElementById('projectName').value.tr
 function loadProject(name){const p=getProjects()[name];if(!p)return;currentProject=name;htmlEditor.value=p.html||'';cssEditor.value=p.css||'';jsEditor.value=p.js||'';showPage('code');runCode();}
 function deleteProject(name){const p=getProjects();delete p[name];setProjects(p);}
 function renderProjects(){const box=document.getElementById('projectList'),p=getProjects();box.innerHTML='';const names=Object.keys(p);if(!names.length){box.innerHTML='<div class="muted">No saved projects yet.</div>';return;}names.forEach(name=>{const row=document.createElement('div');row.className='project';const left=document.createElement('div');left.innerHTML=`<strong>${name.replace(/[<>]/g,'')}</strong><br><span>Saved project</span>`;const act=document.createElement('div');act.className='actions';const open=document.createElement('button');open.className='btn';open.textContent='Open';open.onclick=()=>loadProject(name);const del=document.createElement('button');del.className='btn';del.textContent='Delete';del.onclick=()=>deleteProject(name);act.append(open,del);row.append(left,act);box.appendChild(row);});}
-
 async function checkGPT(){const detail=document.getElementById('gptDetail'),chat=document.getElementById('chat');try{const r=await fetch(`${BACKEND}/ai-status`,{cache:'no-store'});const d=await r.json();gptReady=Boolean(d.configured);detail.textContent=gptReady?`${d.model} connected`:'OpenAI API key needed';chat.innerHTML='';addMessage(gptReady?'Black Hole GPT online. Ask me for coding help.':'GPT is installed but not funded/configured for requests yet.','ai');}catch{gptReady=false;detail.textContent='Could not check GPT status';}}
 async function sendMessage(){const input=document.getElementById('chatInput'),btn=document.getElementById('sendBtn'),message=input.value.trim();if(!message)return;if(!gptReady){addMessage('GPT is not ready yet.','ai');return;}addMessage(message,'user');input.value='';btn.disabled=true;btn.textContent='…';const wait=addMessage('Thinking…','ai');try{const r=await fetch(`${BACKEND}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message})});const d=await r.json();wait.remove();if(!r.ok)throw new Error(d.error||`HTTP ${r.status}`);addMessage(d.reply,'ai');}catch(err){wait.remove();addMessage(`Error: ${err.message}`,'ai');}finally{btn.disabled=false;btn.textContent='Send';}}
-
 async function testApi(){const url=document.getElementById('apiUrl').value.trim(),out=document.getElementById('apiOutput');out.textContent='Loading…';try{const r=await fetch(url);const text=await r.text();let pretty=text;try{pretty=JSON.stringify(JSON.parse(text),null,2)}catch{}out.textContent=`HTTP ${r.status}\n${pretty.slice(0,5000)}`;}catch(err){out.textContent='Error: '+err.message;}}
-
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 document.querySelectorAll('[data-editor]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-editor]').forEach(x=>x.classList.remove('active'));b.classList.add('active');['html','css','js'].forEach(id=>document.getElementById(id+'Editor').style.display=id===b.dataset.editor?'block':'none');});
