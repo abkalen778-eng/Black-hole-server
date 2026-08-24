@@ -1,6 +1,6 @@
 {
   "name": "black-hole-server",
-  "version": "2.5.0",
+  "version": "2.7.0",
   "private": true,
   "description": "Backend for the Black Hole Server phone dashboard",
   "main": "server.js",
@@ -8,6 +8,8 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.890.0",
+    "@aws-sdk/s3-request-presigner": "^3.890.0",
     "@openai/codex-sdk": "latest",
     "pg": "^8.13.1"
   },
