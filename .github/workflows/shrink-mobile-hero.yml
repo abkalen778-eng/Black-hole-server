@@ -1,0 +1,42 @@
+name: Shrink mobile Coding Control Center
+
+on:
+  push:
+    paths:
+      - '.github/workflows/shrink-mobile-hero.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  shrink:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Shrink mobile hero only
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          old = '.hero{min-height:260px;padding:0 17px 18px;background-position:center center}'
+          new = '.hero{min-height:230px;padding:0 17px 18px;background-position:center center}'
+          if old not in s:
+              raise SystemExit('Expected 260px mobile hero rule was not found; refusing to change anything else.')
+          p.write_text(s.replace(old, new, 1))
+          PY
+
+      - name: Remove one-time workflow
+        run: rm .github/workflows/shrink-mobile-hero.yml
+
+      - name: Commit the visual-only change
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/shrink-mobile-hero.yml
+          git commit -m "Shrink mobile Coding Control Center"
+          git push
