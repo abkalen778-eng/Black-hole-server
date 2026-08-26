@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050508" />
+  <title>Network Monitor • Black Hole Server</title>
+  <style>
+    :root{--bg:#050508;--panel:#0e0e14;--line:#272738;--text:#f4f4f7;--muted:#9a9aaa;--glow:#9b5cff;--ok:#56f39a;--bad:#ff6b7a;--warn:#ffd166}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#25123f 0,#0b0712 28%,var(--bg) 60%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px)}
+    button{font:inherit}.wrap{max-width:760px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.brand{font-weight:850;font-size:21px}.btn{border:1px solid #3a2b51;background:#171020;color:#fff;border-radius:13px;padding:10px 12px;font-weight:750}.hero{background:linear-gradient(180deg,rgba(155,92,255,.18),rgba(155,92,255,.04));border:1px solid #35264b;border-radius:22px;padding:18px;margin-bottom:14px}.hero h1{margin:0 0 6px;font-size:26px}.hero p{margin:0;color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;min-height:118px}.wide{grid-column:1/-1}.icon{font-size:22px}.card h3{margin:6px 0;font-size:16px}.value{font-size:25px;font-weight:850;margin-top:7px}.muted{font-size:13px;color:var(--muted)}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.terminal{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border-radius:13px;padding:12px;color:#b8ffcf;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.footer{text-align:center;color:#666677;font-size:12px;margin-top:16px}@media(max-width:520px){.grid{grid-template-columns:1fr 1fr}.brand{font-size:18px}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><div class="brand">📡 Network Monitor</div><button class="btn" onclick="location.href='index.html'">← Black Hole</button></div>
+  <section class="hero"><h1>Black Hole Network Monitor</h1><p>Live status from your Android network sensor.</p></section>
+
+  <div class="grid">
+    <div class="card"><div class="icon">📱</div><h3>Sensor</h3><div class="value" id="sensorState">Checking…</div><div class="muted" id="sensorName">Android / Termux</div></div>
+    <div class="card"><div class="icon">🌐</div><h3>Internet</h3><div class="value" id="internetState">Checking…</div><div class="muted">Reported by your Android</div></div>
+    <div class="card"><div class="icon">📶</div><h3>Devices Online</h3><div class="value" id="deviceCount">—</div><div class="muted">Visible on your home Wi-Fi</div></div>
+    <div class="card"><div class="icon">🕒</div><h3>Last Update</h3><div class="value" id="lastSeen">—</div><div class="muted">Sensor heartbeat</div></div>
+    <div class="card wide"><div class="icon">🛡️</div><h3>Privacy</h3><div class="muted">This dashboard shows only a safe summary. Your public IP and individual local device IPs are not exposed on this public page.</div></div>
+    <div class="card wide"><div class="icon">⌨️</div><h3>Status Console</h3><div class="terminal" id="console">blackhole@network:~$ connecting...</div><div class="actions"><button class="btn" onclick="refreshNetwork()">Refresh</button></div></div>
+  </div>
+  <div class="footer">Black Hole Server • Network Monitor</div>
+</main>
+<script>
+const NETWORK_API='https://black-hole-network-monitor-production.up.railway.app';
+function ageText(iso){if(!iso)return 'Never';const sec=Math.max(0,Math.floor((Date.now()-new Date(iso).getTime())/1000));if(sec<60)return sec+'s ago';if(sec<3600)return Math.floor(sec/60)+'m ago';return Math.floor(sec/3600)+'h ago';}
+async function refreshNetwork(){
+  const consoleEl=document.getElementById('console');
+  try{
+    const r=await fetch(`${NETWORK_API}/summary`,{cache:'no-store'});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const d=await r.json();
+    const sensor=document.getElementById('sensorState');
+    sensor.textContent=d.connected?'Connected':'Offline';
+    sensor.className='value '+(d.connected?'ok':'bad');
+    document.getElementById('sensorName').textContent=d.sensor||'Android / Termux';
+    const internet=document.getElementById('internetState');
+    internet.textContent=d.internetStatus||'UNKNOWN';
+    internet.className='value '+(d.internetStatus==='ONLINE'?'ok':d.internetStatus==='OFFLINE'?'bad':'warn');
+    document.getElementById('deviceCount').textContent=Number.isFinite(Number(d.deviceCount))?d.deviceCount:'—';
+    document.getElementById('lastSeen').textContent=ageText(d.lastSeen);
+    consoleEl.textContent=`blackhole@network:~$ status\n${d.connected?'✓':'✗'} Android sensor ${d.connected?'connected':'offline'}\n${d.internetStatus==='ONLINE'?'✓':'✗'} Internet ${d.internetStatus||'UNKNOWN'}\n✓ ${d.deviceCount||0} devices online\n✓ Last report ${ageText(d.lastSeen)}`;
+  }catch(err){
+    document.getElementById('sensorState').textContent='Unavailable';
+    document.getElementById('sensorState').className='value bad';
+    document.getElementById('internetState').textContent='UNKNOWN';
+    document.getElementById('deviceCount').textContent='—';
+    document.getElementById('lastSeen').textContent='—';
+    consoleEl.textContent='blackhole@network:~$ error\n✗ '+err.message;
+  }
+}
+refreshNetwork();setInterval(refreshNetwork,15000);
+</script>
+</body>
+</html>
