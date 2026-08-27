@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#050508" />
+<title>Black Hole VPN</title>
+<style>
+:root{--bg:#050508;--panel:#0d0e14;--line:#30242a;--text:#f7f3ef;--muted:#aaa2a2;--ok:#56f39a;--bad:#ff6b7a;--warn:#ffd166}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 16% 7%,rgba(169,57,20,.18),transparent 18%),radial-gradient(circle at 84% 12%,rgba(255,118,43,.13),transparent 20%),linear-gradient(180deg,#09070c,#050508)}
+.wrap{max-width:900px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.brand{font-size:21px;font-weight:900}.btn{border:1px solid #4b2c20;background:linear-gradient(180deg,#1d1317,#110d11);color:#fff;border-radius:13px;padding:10px 12px;font-weight:750}.hero,.card{background:linear-gradient(180deg,rgba(15,15,21,.97),rgba(10,10,16,.97));border:1px solid var(--line);box-shadow:0 12px 34px rgba(0,0,0,.3)}.hero{border-radius:24px;padding:22px;margin-bottom:13px}.hero h1{margin:4px 0 7px;font-size:31px}.hero p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{border-radius:18px;padding:15px;min-height:116px}.wide{grid-column:1/-1}.icon{font-size:22px}.card h3{margin:6px 0}.value{font-size:25px;font-weight:850;margin-top:7px}.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:12px;border:1px solid #5a3d1a;color:var(--warn);background:#26190d}.badge.ok{color:var(--ok);border-color:#164c31;background:#0b2518}.badge.bad{color:var(--bad);border-color:#5a2028;background:#2a1014}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.terminal{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border:1px solid #241f25;border-radius:13px;padding:12px;color:#b8ffcf;font-size:12px;min-height:100px;white-space:pre-wrap}.field{width:100%;background:#08080d;color:white;border:1px solid #34262d;border-radius:12px;padding:11px;margin-top:10px}.footer{text-align:center;color:#6e6669;font-size:12px;margin-top:16px}@media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.hero h1{font-size:28px}.card{padding:13px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><div class="brand">🕳️ Black Hole VPN</div><button class="btn" onclick="location.href='index.html'">← Server</button></div>
+<section class="hero"><span class="badge" id="vpnBadge">● CHECKING</span><h1>VPN Control Center</h1><p>Tailscale connection and exit-node dashboard for your Black Hole setup.</p></section>
+<div class="grid">
+<div class="card"><div class="icon">🛡️</div><h3>VPN Status</h3><div class="value" id="vpnState">Checking…</div><div class="muted" id="vpnDetail">Testing Tailscale connectivity</div></div>
+<div class="card"><div class="icon">⚡</div><h3>Backend</h3><div class="value" id="backendState">Checking…</div><div class="muted" id="latency">Latency —</div></div>
+<div class="card"><div class="icon">📱</div><h3>This iPhone</h3><div class="value" id="clientState">Ready</div><div class="muted">Use the Tailscale iOS app to connect this phone.</div></div>
+<div class="card"><div class="icon">🚪</div><h3>Exit Node</h3><div class="value" id="exitState">Not verified</div><div class="muted">Exit-node routing must be confirmed from Tailscale.</div></div>
+<div class="card wide"><div class="icon">🌐</div><h3>Tailscale Test</h3><div class="muted">Enter a Tailscale device URL or 100.x.x.x address that exposes HTTP/HTTPS to test whether your iPhone can reach it through your tailnet.</div><input class="field" id="tailUrl" placeholder="http://100.x.x.x:port or https://device-name.tailnet.ts.net"><div class="actions"><button class="btn" onclick="testTailnet()">Test Connection</button><button class="btn" onclick="refreshAll()">Refresh</button></div></div>
+<div class="card wide"><div class="icon">🧭</div><h3>Quick Setup</h3><div class="muted">1. Open Tailscale on this iPhone and connect. 2. Make sure your Android/server device is online in the same tailnet. 3. If you want internet traffic routed through another device, select that device as the exit node in Tailscale. 4. Return here and run the test.</div></div>
+<div class="card wide"><div class="icon">⌨️</div><h3>VPN Console</h3><div class="terminal" id="console">blackhole@vpn:~$ initializing…</div></div>
+</div>
+<div class="footer">Black Hole Server • VPN Dashboard</div>
+</main>
+<script>
+const BACKEND='https://black-hole-backend-production.up.railway.app';
+const badge=document.getElementById('vpnBadge'),consoleBox=document.getElementById('console');
+function log(x){consoleBox.textContent+='\n'+x}
+async function refreshAll(){const start=performance.now();try{const r=await fetch(BACKEND+'/health',{cache:'no-store'});if(!r.ok)throw new Error('Backend HTTP '+r.status);const ms=Math.round(performance.now()-start);document.getElementById('backendState').textContent='Online';document.getElementById('latency').textContent='Latency '+ms+'ms';log('✓ Black Hole backend reachable in '+ms+'ms')}catch(e){document.getElementById('backendState').textContent='Offline';document.getElementById('latency').textContent='Could not reach Railway';log('✗ Backend: '+e.message)}badge.textContent='● READY';badge.className='badge ok';document.getElementById('vpnState').textContent='Ready to test';document.getElementById('vpnDetail').textContent='Dashboard loaded — connect Tailscale on iPhone';}
+async function testTailnet(){let url=document.getElementById('tailUrl').value.trim();if(!url){log('! Enter a Tailscale device URL first');return}if(!/^https?:\/\//i.test(url))url='http://'+url;document.getElementById('vpnState').textContent='Testing…';const start=performance.now();try{await fetch(url,{mode:'no-cors',cache:'no-store'});const ms=Math.round(performance.now()-start);document.getElementById('vpnState').textContent='Reachable';document.getElementById('vpnDetail').textContent='Tailnet endpoint responded in about '+ms+'ms';badge.textContent='● CONNECTED';badge.className='badge ok';log('✓ Tailnet endpoint reachable: '+url);log('✓ Approx. '+ms+'ms')}catch(e){document.getElementById('vpnState').textContent='Not reachable';document.getElementById('vpnDetail').textContent='Check Tailscale connection/device address';badge.textContent='● CHECK VPN';badge.className='badge bad';log('✗ Tailnet test failed: '+e.message)}}
+consoleBox.textContent='blackhole@vpn:~$ dashboard ready';refreshAll();
+</script>
+</body>
+</html>
