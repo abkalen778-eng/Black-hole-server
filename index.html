@@ -19,12 +19,12 @@
     h1{position:relative;z-index:2;margin:0 0 6px;font-size:40px;line-height:1.04;letter-spacing:.01em;color:#fff;text-shadow:none}
     .hero p{position:relative;z-index:2;color:#fff;margin:0;font-size:19px;text-shadow:none}
     p{color:var(--muted);margin:0}
-    .nav{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin:14px 0}.nav button,.btn{border:1px solid #4b2c20;background:linear-gradient(180deg,rgba(29,19,23,.96),rgba(17,13,17,.96));color:#fff;border-radius:13px;padding:11px 8px;font-weight:750;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 7px 18px rgba(0,0,0,.14)}.nav button.active{background:linear-gradient(180deg,#3b1b14,#251116);border-color:#c15e2a;color:#ffe5d1;box-shadow:0 0 18px rgba(255,98,36,.12)}.btn:active,.nav button:active{transform:scale(.98)}
+    .nav{display:grid;grid-template-columns:repeat(9,1fr);gap:8px;margin:14px 0}.nav button,.btn{border:1px solid #4b2c20;background:linear-gradient(180deg,rgba(29,19,23,.96),rgba(17,13,17,.96));color:#fff;border-radius:13px;padding:11px 8px;font-weight:750;font-size:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 7px 18px rgba(0,0,0,.14)}.nav button.active{background:linear-gradient(180deg,#3b1b14,#251116);border-color:#c15e2a;color:#ffe5d1;box-shadow:0 0 18px rgba(255,98,36,.12)}.btn:active,.nav button:active{transform:scale(.98)}
     .page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:linear-gradient(180deg,rgba(15,15,21,.96),rgba(10,10,16,.96));border:1px solid var(--line);border-radius:18px;padding:15px;min-height:108px;box-shadow:0 10px 26px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.02);transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease}.card:hover{border-color:#5b3425;box-shadow:0 14px 34px rgba(0,0,0,.32),0 0 20px rgba(255,92,27,.05)}.wide{grid-column:1/-1}.card h3{margin:6px 0;font-size:16px}.icon{font-size:22px;filter:drop-shadow(0 0 8px rgba(255,107,42,.15))}.value{font-size:26px;font-weight:850;margin-top:7px}.muted{font-size:13px;color:var(--muted)}
     .terminal,.output{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border:1px solid #241f25;border-radius:13px;padding:12px;color:#b8ffcf;font-size:12px;min-height:90px;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:inset 0 0 30px rgba(0,0,0,.34)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .field,.editor{width:100%;background:#08080d;color:#fff;border:1px solid #34262d;border-radius:12px;padding:11px;outline:none}.field:focus,.editor:focus{border-color:#8d4628;box-shadow:0 0 0 3px rgba(255,108,44,.08)}.editor{min-height:210px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;resize:vertical}.small{min-height:120px}.tabs{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}.tabs button{padding:8px 10px;border-radius:10px;border:1px solid #313141;background:#101018;color:#ddd}.tabs button.active{background:#311610;border-color:#9a4624;color:white}.preview{width:100%;height:260px;background:white;border:0;border-radius:12px;margin-top:10px}.list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.project{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px;background:#09090e;border:1px solid #2d232a;border-radius:12px}.project strong{font-size:14px}.project span{font-size:12px;color:var(--muted)}
     .chat{height:300px;overflow:auto;background:#07070b;border:1px solid #261f26;border-radius:14px;padding:11px;display:flex;flex-direction:column;gap:9px}.msg{max-width:86%;padding:9px 11px;border-radius:13px;white-space:pre-wrap;line-height:1.35;font-size:14px}.user{align-self:flex-end;background:#311610;border:1px solid #6d3119}.ai{align-self:flex-start;background:#111119;border:1px solid #29293a}.chatrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:9px}.footer{text-align:center;color:#6e6669;font-size:12px;margin-top:16px}
-    @media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.nav{grid-template-columns:repeat(4,1fr)}.nav button{font-size:11px;padding:9px 4px}.brand{font-size:19px}.hero{min-height:230px;padding:0 17px 18px;background-position:center center}h1{font-size:31px}.hero p{font-size:16px}.editor{min-height:190px}}
+    @media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.nav{grid-template-columns:repeat(3,1fr)}.nav button{font-size:11px;padding:9px 4px}.brand{font-size:19px}.hero{min-height:230px;padding:0 17px 18px;background-position:center center}h1{font-size:31px}.hero p{font-size:16px}.editor{min-height:190px}}
   </style>
 </head>
 <body>
@@ -40,6 +40,7 @@
     <button data-page="bots">Bots</button>
     <button data-page="farms">Farms</button>
     <button data-page="network">Network Monitor</button>
+    <button data-page="vpn">VPN</button>
     <button data-page="tools">Tools</button>
   </nav>
 
@@ -50,6 +51,7 @@
       <div class="card"><div class="icon">🧠</div><h3>Memory</h3><div class="value" id="memory">—</div><div class="muted" id="memoryDetail">Backend RAM</div></div>
       <div class="card"><div class="icon">🕒</div><h3>Uptime</h3><div class="value" id="uptime">—</div><div class="muted">Current container</div></div>
       <div class="card wide"><div class="icon">📡</div><h3>Network Monitor</h3><div class="muted">View your Android network sensor, internet status, device count, and last report.</div><div class="actions"><button class="btn" onclick="showPage('network')">Open Network Monitor</button></div></div>
+      <div class="card wide"><div class="icon">🛡️</div><h3>VPN Dashboard</h3><div class="muted">Open your Tailscale VPN control center, test tailnet connectivity, and check exit-node setup.</div><div class="actions"><button class="btn" onclick="showPage('vpn')">Open VPN Dashboard</button></div></div>
       <div class="card wide"><div class="icon">🐙</div><h3>GitHub Manager</h3><div class="muted">Browse repositories, branches and recent commits from Black Hole Server.</div><div class="actions"><button class="btn" onclick="window.location.href='github.html'">Open GitHub Manager</button></div></div>
       <div class="card wide"><div class="icon">🌾</div><h3>Black Hole Farms</h3><div class="muted">Open your Data Farm and Scanner Farm from one place.</div><div class="actions"><button class="btn" onclick="showPage('farms')">Open Farms</button></div></div>
       <div class="card wide"><div class="icon">🤖</div><h3>Discord Bot Monitor</h3><div class="muted">Check the live health of your Railway-hosted Discord bots.</div><div class="actions"><button class="btn" onclick="showPage('bots')">Open Bot Monitor</button></div></div>
@@ -106,6 +108,16 @@
     </div>
   </section>
 
+  <section id="vpn" class="page">
+    <div class="grid">
+      <div class="card wide"><div class="icon">🛡️</div><h3>VPN Control Center</h3><div class="muted">Manage and test your Black Hole Tailscale setup from one dashboard.</div><div class="actions"><button class="btn" onclick="window.location.href='vpn.html'">Open Live VPN Dashboard</button></div></div>
+      <div class="card"><div class="icon">📱</div><h3>iPhone</h3><div class="muted">Connect this iPhone through the Tailscale app and test access to your tailnet.</div></div>
+      <div class="card"><div class="icon">🚪</div><h3>Exit Node</h3><div class="muted">Check whether another Tailscale device is available to route your internet traffic.</div></div>
+      <div class="card"><div class="icon">🌐</div><h3>Tailnet Test</h3><div class="muted">Test a 100.x.x.x address or MagicDNS/Tailscale URL from the VPN dashboard.</div></div>
+      <div class="card"><div class="icon">⚡</div><h3>Connection Health</h3><div class="muted">Measure reachability and approximate latency to your Black Hole backend and tailnet devices.</div></div>
+    </div>
+  </section>
+
   <section id="tools" class="page">
     <div class="grid">
       <div class="card"><div class="icon">🧑‍💻</div><h3>Black Hole Coder</h3><div class="muted">Your custom Gemini-powered coding bot.</div><div class="actions"><button class="btn" onclick="window.location.href='coder.html'">Open Coder</button></div></div>
@@ -116,7 +128,7 @@
     </div>
   </section>
 
-  <div class="footer">Black Hole Server v2.7 • Mobile Coding Cloud</div>
+  <div class="footer">Black Hole Server v2.8 • Mobile Coding Cloud</div>
 </main>
 <script>
 const BACKEND='https://black-hole-backend-production.up.railway.app';
