@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#050508" />
+<title>Black Hole System Monitor</title>
+<style>
+:root{--bg:#050508;--panel:#0d0e14;--line:#30242a;--text:#f7f3ef;--muted:#aaa2a2;--ok:#56f39a;--bad:#ff6b7a;--warn:#ffd166}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 24px);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(circle at 16% 7%,rgba(169,57,20,.18),transparent 18%),radial-gradient(circle at 84% 12%,rgba(255,118,43,.13),transparent 20%),linear-gradient(180deg,#09070c,#050508)}
+.wrap{max-width:900px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.brand{font-size:21px;font-weight:900}.btn{border:1px solid #4b2c20;background:linear-gradient(180deg,#1d1317,#110d11);color:#fff;border-radius:13px;padding:10px 12px;font-weight:750}.hero,.card{background:linear-gradient(180deg,rgba(15,15,21,.97),rgba(10,10,16,.97));border:1px solid var(--line);box-shadow:0 12px 34px rgba(0,0,0,.3)}.hero{border-radius:24px;padding:22px;margin-bottom:13px}.hero h1{margin:4px 0 7px;font-size:31px}.hero p,.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{border-radius:18px;padding:15px;min-height:116px}.wide{grid-column:1/-1}.icon{font-size:22px}.card h3{margin:6px 0}.value{font-size:25px;font-weight:850;margin-top:7px}.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:12px;border:1px solid #5a3d1a;color:var(--warn);background:#26190d}.badge.ok{color:var(--ok);border-color:#164c31;background:#0b2518}.badge.bad{color:var(--bad);border-color:#5a2028;background:#2a1014}.bar{height:10px;border-radius:999px;background:#15151d;overflow:hidden;margin-top:10px;border:1px solid #24242e}.fill{height:100%;width:0;background:linear-gradient(90deg,#8f431f,#ff8b45);transition:width .35s ease}.terminal{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#050507;border:1px solid #241f25;border-radius:13px;padding:12px;color:#b8ffcf;font-size:12px;min-height:120px;white-space:pre-wrap}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.footer{text-align:center;color:#6e6669;font-size:12px;margin-top:16px}@media(max-width:620px){.grid{grid-template-columns:1fr 1fr}.hero h1{font-size:28px}.card{padding:13px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="top"><div class="brand">🕳️ System Monitor</div><button class="btn" onclick="location.href='index.html'">← Server</button></div>
+<section class="hero"><span class="badge" id="badge">● CHECKING</span><h1>Black Hole System Monitor</h1><p>Live health, memory, uptime, latency and service telemetry from your Railway backend.</p></section>
+<div class="grid">
+<div class="card"><div class="icon">⚡</div><h3>Backend</h3><div class="value" id="backend">Checking…</div><div class="muted" id="backendDetail">Railway service</div></div>
+<div class="card"><div class="icon">📡</div><h3>Latency</h3><div class="value" id="latency">—</div><div class="muted">iPhone → backend</div></div>
+<div class="card"><div class="icon">🧠</div><h3>Memory</h3><div class="value" id="memory">—</div><div class="muted" id="memoryDetail">RSS / heap</div><div class="bar"><div class="fill" id="memoryBar"></div></div></div>
+<div class="card"><div class="icon">🕒</div><h3>Uptime</h3><div class="value" id="uptime">—</div><div class="muted">Current Railway container</div></div>
+<div class="card"><div class="icon">🧩</div><h3>Runtime</h3><div class="value" id="runtime">—</div><div class="muted" id="platform">Node.js backend</div></div>
+<div class="card"><div class="icon">🔁</div><h3>Checks</h3><div class="value" id="checks">0</div><div class="muted">Successful monitor refreshes</div></div>
+<div class="card wide"><div class="icon">🩺</div><h3>Service Health</h3><div class="muted" id="healthSummary">Waiting for first health check…</div><div class="actions"><button class="btn" onclick="refreshMonitor(true)">Refresh Now</button><button class="btn" onclick="toggleAuto()" id="autoBtn">Auto Refresh: ON</button></div></div>
+<div class="card wide"><div class="icon">⌨️</div><h3>System Console</h3><div class="terminal" id="console">blackhole@system:~$ initializing…</div></div>
+</div>
+<div class="footer">Black Hole Server • System Monitor</div>
+</main>
+<script>
+const BACKEND='https://black-hole-backend-production.up.railway.app';
+let checks=0,auto=true,timer=null;
+const el=id=>document.getElementById(id);
+function fmtUptime(s){s=Number(s)||0;if(s<60)return Math.floor(s)+'s';if(s<3600)return Math.floor(s/60)+'m '+Math.floor(s%60)+'s';if(s<86400)return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m';return Math.floor(s/86400)+'d '+Math.floor((s%86400)/3600)+'h';}
+function log(msg){const c=el('console');c.textContent+='\n'+new Date().toLocaleTimeString()+'  '+msg;c.scrollTop=c.scrollHeight;}
+async function refreshMonitor(manual=false){const started=performance.now();try{const [hr,sr]=await Promise.all([fetch(BACKEND+'/health',{cache:'no-store'}),fetch(BACKEND+'/stats',{cache:'no-store'})]);if(!hr.ok||!sr.ok)throw new Error('HTTP '+hr.status+'/'+sr.status);const h=await hr.json(),s=await sr.json(),ms=Math.round(performance.now()-started);checks++;el('checks').textContent=checks;el('backend').textContent='Online';el('backendDetail').textContent=(h.name||'Black Hole Backend')+(h.version?' • v'+h.version:'');el('latency').textContent=ms+'ms';const rss=Number(s.memoryMB?.rss||0),heapUsed=Number(s.memoryMB?.heapUsed||0),heapTotal=Number(s.memoryMB?.heapTotal||0);el('memory').textContent=rss?rss+' MB':'—';el('memoryDetail').textContent=heapTotal?`Heap ${heapUsed}/${heapTotal} MB`:'Memory telemetry unavailable';el('memoryBar').style.width=heapTotal?Math.min(100,Math.round((heapUsed/heapTotal)*100))+'%':'0%';el('uptime').textContent=fmtUptime(s.uptimeSeconds);el('runtime').textContent=s.node||'Node.js';el('platform').textContent=s.platform?String(s.platform):'Railway container';el('badge').textContent='● HEALTHY';el('badge').className='badge ok';el('healthSummary').textContent=`All monitored endpoints responding • ${ms}ms round trip • last checked ${new Date().toLocaleTimeString()}`;log('✓ health + stats OK | '+ms+'ms | memory '+(rss||'?')+' MB | uptime '+fmtUptime(s.uptimeSeconds));}catch(e){el('backend').textContent='Offline';el('badge').textContent='● ISSUE';el('badge').className='badge bad';el('healthSummary').textContent='Could not reach one or more backend monitor endpoints.';log('✗ '+e.message);}if(manual)log('↻ manual refresh complete');}
+function schedule(){clearInterval(timer);if(auto)timer=setInterval(()=>refreshMonitor(false),15000)}
+function toggleAuto(){auto=!auto;el('autoBtn').textContent='Auto Refresh: '+(auto?'ON':'OFF');schedule();log('Auto refresh '+(auto?'enabled':'disabled'));}
+el('console').textContent='blackhole@system:~$ monitor ready';refreshMonitor(false);schedule();
+</script>
+</body>
+</html>
